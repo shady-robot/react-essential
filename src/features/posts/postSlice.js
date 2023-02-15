@@ -1,5 +1,7 @@
 import { createSlice, nanoid, createAsyncThunk } from '@reduxjs/toolkit'
+import { response } from 'msw'
 import { client } from '../../api/client'
+import { AddPostForm } from './AddPostForm'
 
 const initialState = {
   posts: [],
@@ -11,6 +13,14 @@ export const fetchPosts = createAsyncThunk('posts/fetchPosts', async () => {
   const response = await client.get('/fakeApi/posts')
   return response.data
 })
+
+export const addNewPost = createAsyncThunk(
+  'posts/addNewPost',
+  async (initialPost) => {
+    const response = await client.post('/fakeApi/posts', initialPost)
+    return response.data
+  }
+)
 
 const postsSlice = createSlice({
   name: 'posts',
@@ -62,6 +72,10 @@ const postsSlice = createSlice({
       .addCase(fetchPosts.rejected, (state, action) => {
         state.status = 'failed'
         state.error = action.error.message
+      })
+      .addCase(addNewPost.fulfilled, (state, action) => {
+        //we can directly add the new post object to our post array
+        state.posts.push(action.payload)
       })
   },
 })
